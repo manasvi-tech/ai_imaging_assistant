@@ -1,0 +1,41 @@
+# 🐍 Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.env
+.env.*
+
+# 🔧 Virtual Environment
+venv/
+ENV/
+env/
+.venv/
+.Python
+
+# 📁 Logs & Runtime
+*.log
+*.sqlite3
+*.db
+*.pid
+*.pid.lock
+
+# 🐘 PostgreSQL dumps or data
+*.sql
+*.dump
+
+# 🧠 AI Cache / Weights
+*.ckpt
+*.pth
+*.pt
+*.npz
+runs/
+
+
+# Node modules and build output
+/frontend/node_modules/
+/frontend/build/
+
+/frontend/.env
+/frontend/.env.local
+/frontend/.env.*.local
