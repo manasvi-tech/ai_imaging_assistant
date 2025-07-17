@@ -5,11 +5,14 @@ import App from './App.jsx'
 import 'flowbite'
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import { AuthProvider } from './contexts/AuthContext.jsx'
 
 <ToastContainer position="top-right" autoClose={3000} />
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AuthProvider>
+      <App />
+    </AuthProvider >
   </StrictMode>,
 )

@@ -8,4 +8,4 @@ api_router.include_router(auth.router, prefix="/auth")  # ✅ Let nested routers
 api_router.include_router(patients.router, prefix="/patients", tags=["Patients"])
 api_router.include_router(scans.router, prefix="/scans", tags=["Scans"])
 api_router.include_router(admin.router, prefix="/auth", tags=["Admin"])
-api_router.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
+api_router.include_router(reports.router, prefix="/reports", tags=["Reports"])

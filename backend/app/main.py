@@ -33,9 +33,16 @@ def get_application():
     )
 
     # CORS
+    origins = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+
+    from fastapi.middleware.cors import CORSMiddleware
+
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.BACKEND_CORS_ORIGINS,
+        allow_origins=["*"],  # For development, restrict in production
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

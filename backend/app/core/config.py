@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     HF_TOKEN: str
     GEMINI_API_KEY: str # Gemini API key
+    FRONTEND_URL: str = "http://localhost:5173" 
 
     # Database
     DATABASE_URL: str

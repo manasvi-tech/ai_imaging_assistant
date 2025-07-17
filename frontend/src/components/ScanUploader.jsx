@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,  } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const ScanUploader = () => {
   const [patientName, setPatientName] = useState('');
@@ -10,6 +11,8 @@ const ScanUploader = () => {
   const [success, setSuccess] = useState('');
   const [patientResults, setPatientResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+  const navigate = useNavigate();
+
 
   // Search patients when name changes (with debounce)
   useEffect(() => {
@@ -54,41 +57,37 @@ const ScanUploader = () => {
   };
 
   const handleUpload = async (e) => {
-  e.preventDefault();
-  setError('');
-  setSuccess('');
+    e.preventDefault();
+    setError('');
+    setSuccess('');
 
-  if (!file || !patientId || !scanType) {
-    setError('Please select a patient, scan type, and file');
-    return;
-  }
+    if (!file || !patientId || !scanType) {
+      setError('Please select a patient, scan type, and file');
+      return;
+    }
 
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('scan_type', scanType);
-    formData.append('patient_id', patientId);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('scan_type', scanType);
+      formData.append('patient_id', patientId);
 
-    // Update this line to match your backend endpoint
-    await axios.post('http://localhost:8000/api/v1/scans/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${localStorage.getItem('token')}`,
-      },
-    });
+      const response = await axios.post('http://localhost:8000/api/v1/scans/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
 
-    setSuccess('Scan uploaded successfully!');
-    // Reset form
-    setFile(null);
-    setPatientName('');
-    setPatientId('');
-    setScanType('');
-    setPatientResults([]);
-  } catch (err) {
-    console.error('Upload error:', err);
-    setError(err.response?.data?.detail || 'Upload failed. Please try again.');
-  }
-};
+      setSuccess('Scan uploaded successfully!');
+      // Redirect to report view with the new scan ID
+      navigate(`/reports/${response.data.scan_id}`);
+      
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError(err.response?.data?.detail || 'Upload failed. Please try again.');
+    }
+  };
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-xl">
@@ -175,3 +174,4 @@ const ScanUploader = () => {
 };
 
 export default ScanUploader;
+

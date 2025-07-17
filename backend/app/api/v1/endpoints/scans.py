@@ -140,3 +140,4 @@ def list_scans(
     except Exception as e:
         logger.error(f"Error listing scans: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    

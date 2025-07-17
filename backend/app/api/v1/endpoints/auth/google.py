@@ -8,6 +8,7 @@ from app.db.models.user import User
 from app.core.security import create_access_token
 from app.core.config import settings
 from app.core.constants import DEFAULT_AVATAR_URL
+from fastapi.responses import RedirectResponse
 
 router = APIRouter()
 
@@ -41,4 +42,4 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         db.refresh(user)
 
     access_token = create_access_token(data={"sub": str(user.id)})
-    return {"access_token": access_token, "token_type": "bearer"}
+    return RedirectResponse(f"{settings.FRONTEND_URL}/oauth/callback?token={access_token}")

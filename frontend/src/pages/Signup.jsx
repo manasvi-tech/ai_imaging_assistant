@@ -27,8 +27,8 @@ const Signup = () => {
     e.preventDefault();
 
     try {
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, formData);
-      navigate("/login"); // redirect after successful signup
+      await axios.post(`http://localhost:8000/api/v1/auth/signup/email`, formData);
+      navigate("/home"); // redirect after successful signup
     } catch (err) {
       setError(err.response?.data?.detail || "Signup failed");
     }

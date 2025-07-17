@@ -34,7 +34,7 @@ def update_report(report_id: UUID, report_in: ReportUpdate, db: Session = Depend
         raise HTTPException(status_code=404, detail="Report not found")
     return report
 
-@router.post("/segment_scan/{scan_id}", tags=["AI"])
+
 @router.post("/segment_scan/{scan_id}", tags=["AI"])
 def segment_scan_by_id(scan_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     # Get scan from DB
