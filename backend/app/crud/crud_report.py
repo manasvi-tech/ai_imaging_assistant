@@ -2,6 +2,11 @@ from sqlalchemy.orm import Session
 from app.db.models.report import Report
 from app.schemas.report import ReportCreate, ReportUpdate
 from uuid import UUID
+from typing import Optional
+from app.db.models.scan import Scan  # adjust import if needed
+
+def get_scan_by_id(db: Session, scan_id: UUID) -> Optional[Scan]:
+    return db.query(Scan).filter(Scan.id == scan_id).first()
 
 def create_report(db: Session, report_in: ReportCreate, user_id: UUID) -> Report:
     report = Report(**report_in.dict(), created_by=user_id)

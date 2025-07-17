@@ -4,6 +4,7 @@ from app.db.base import Base
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Scan(Base):

@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from app.core.config import settings
 import logging
 
+
 # Configure logging
 logging.basicConfig()
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)

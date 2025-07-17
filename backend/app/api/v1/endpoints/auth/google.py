@@ -16,7 +16,7 @@ async def google_login(request: Request):
     redirect_uri = settings.GOOGLE_REDIRECT_URI
     return await oauth.google.authorize_redirect(request, redirect_uri)
 
-@router.get("/auth/google/callback", tags=["OAuth"])
+@router.get("/google/callback", tags=["OAuth"])
 async def google_callback(request: Request, db: Session = Depends(get_db)):
     token = await oauth.google.authorize_access_token(request)
     user_info = token.get("userinfo")
@@ -40,5 +40,5 @@ async def google_callback(request: Request, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(user)
 
-    access_token = create_access_token(data={"sub": user.id})
+    access_token = create_access_token(data={"sub": str(user.id)})
     return {"access_token": access_token, "token_type": "bearer"}
