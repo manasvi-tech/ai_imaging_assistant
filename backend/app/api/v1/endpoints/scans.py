@@ -13,6 +13,9 @@ from app.db.models.patient import Patient
 from app.db.models.scan import Scan as ScanModel
 import logging
 from uuid import UUID
+import tempfile
+from fastapi.responses import FileResponse
+from app.api.utils.image_converter import dicom_to_png, nifti_to_png  # You'll need to implement these
 
 router = APIRouter()
 
@@ -100,6 +103,7 @@ async def upload_scan(
             db.refresh(db_scan)
             logger.info(f"Successfully created scan record with ID: {db_scan.id}")
             return db_scan
+        
         except Exception as e:
             db.rollback()
             # Clean up the file if DB operation failed
@@ -141,3 +145,34 @@ def list_scans(
         logger.error(f"Error listing scans: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     
+
+@router.get("/{scan_id}/image")
+async def get_scan_image(scan_id: UUID, db: Session = Depends(get_db)):
+    scan = db.query(ScanModel).filter(ScanModel.id == scan_id).first()
+    if not scan:
+        raise HTTPException(status_code=404, detail="Scan not found")
+    
+    if not os.path.exists(scan.file_path):
+        raise HTTPException(status_code=404, detail="Scan file not found")
+    
+    # Handle different file formats
+    if scan.file_path.lower().endswith('.dcm'):
+        # Convert DICOM to PNG
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp:
+            output_path = temp.name
+            dicom_to_png(scan.file_path, output_path)
+            return FileResponse(output_path, media_type="image/png")
+    
+    elif scan.file_path.lower().endswith(('.nii', '.nii.gz')):
+        # Convert NIfTI to PNG
+        with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp:
+            output_path = temp.name
+            nifti_to_png(scan.file_path, output_path)
+            return FileResponse(output_path, media_type="image/png")
+    
+    elif scan.file_path.lower().endswith(('.png', '.jpg', '.jpeg')):
+        # Directly return supported image formats
+        return FileResponse(scan.file_path)
+    
+    else:
+        raise HTTPException(status_code=415, detail="Unsupported file format for display")

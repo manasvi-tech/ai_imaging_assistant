@@ -7,11 +7,12 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';  
 import ReportDashboard from './pages/ReportDashboard';
+import ProfilePage from './pages/ProfilePage';
 
 const App = () => {
   return (
     <Router>
-              <Navbar/>
+          <Navbar/>
       <Routes>
 
         <Route path="/" element={<Home />} />
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/reports/:reportId" element={<ReportDashboard />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
     </Router>
   );

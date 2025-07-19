@@ -41,13 +41,12 @@ def get_application():
     from fastapi.middleware.cors import CORSMiddleware
 
     app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],  # For development, restrict in production
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # Your frontend dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
     # 🔐 Add this line (SessionMiddleware)
     app.add_middleware(SessionMiddleware, secret_key="session-key")
 

@@ -1,22 +1,16 @@
+import flowbite from 'flowbite/plugin'
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
-    "./node_modules/flowbite/**/*.js",
+    "./node_modules/flowbite/**/*.js", // ✅ Required for Flowbite components
   ],
   theme: {
-    extend: {
-      colors:{
-        navbar: '#206f6a'
-      },
-      fontFamily: {
-        dancing: ['"Dancing Script"', 'cursive'], // Add this line
-      }
-    },
+    extend: {},
   },
   plugins: [
-    require('flowbite/plugin')
+    flowbite, // ✅ Proper place for Flowbite plugin
   ],
 }
-

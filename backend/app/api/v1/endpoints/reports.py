@@ -11,10 +11,15 @@ import os
 from app.services.ai.segmentation import call_medsam_segmentation
 from app.api.utils.image_converter import dicom_to_png
 from app.services.ai.gemini_reasoning import analyze_scan_with_gemini
+from app.db.models.patient import Patient
+from app.db.models.report import Report
+import logging
 
 from uuid import uuid4
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 @router.post("/", response_model=ReportOut)
 def create_report(report: ReportCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -67,6 +72,8 @@ def segment_scan_by_id(scan_id: UUID, db: Session = Depends(get_db), current_use
         raise HTTPException(status_code=500, detail=f"Segmentation failed: {str(e)}")
     
     
+
+
 @router.post("/analyze_scan/{scan_id}", tags=["AI"])
 def analyze_scan(scan_id: UUID, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     scan = crud_report.get_scan_by_id(db, scan_id)
@@ -77,24 +84,43 @@ def analyze_scan(scan_id: UUID, db: Session = Depends(get_db), current_user: Use
     if not os.path.exists(image_path):
         raise HTTPException(status_code=404, detail="Image file not found")
 
-    # If DICOM, convert to PNG
+    patient = db.query(Patient).filter(Patient.id == scan.patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found for scan")
+
+    age = patient.age if patient.age is not None else 60
+    scan_type = scan.scan_type or "Unknown"
+
     if image_path.endswith(".dcm"):
         converted_path = image_path.replace(".dcm", ".png")
         dicom_to_png(image_path, converted_path)
         image_path = converted_path
 
     try:
-        # You can fetch age/scan_type from report/DB if stored
+        # Call Gemini and get findings
         gemini_summary = analyze_scan_with_gemini(
-        image_path=image_path,
-        age=60,  # Replace with real metadata
-        scan_type="Chest X-ray"
+            image_path=image_path,
+            age=age,
+            scan_type=scan_type
         )
 
+        # ✅ Save to database in generated_diagnosis only
+        report = Report(
+            scan_id=scan.id,
+            patient_id=patient.id,
+            generated_diagnosis=gemini_summary,
+            created_by=current_user.id
+        )
+        db.add(report)
+        db.commit()
+        db.refresh(report)
+
         return {
-            "scan_id": str(scan.id),
-            "ai_findings": gemini_summary
-        }
+        "scan_id": str(scan.id),
+        "report_id": str(report.id),  # Make sure this is returned
+        "generated_diagnosis": gemini_summary
+    }
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Gemini reasoning failed: {str(e)}")
+        logger.exception("AI reasoning failed.")
+        raise HTTPException(status_code=500, detail=f"AI reasoning failed: {str(e)}")

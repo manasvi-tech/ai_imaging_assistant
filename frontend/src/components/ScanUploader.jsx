@@ -16,16 +16,29 @@ const ScanUploader = () => {
 
   // Search patients when name changes (with debounce)
   useEffect(() => {
-    const timer = setTimeout(() => {
-      if (patientName.length >= 2) {
-        handlePatientSearch();
-      } else {
-        setPatientResults(res.data.patients || []);
-      }
-    }, 300);
+  const timer = setTimeout(() => {
+    if (patientName.length >= 2) {
+      handlePatientSearch();
+    } else {
+      setPatientResults([]);
+    }
+  }, 300);
 
-    return () => clearTimeout(timer);
-  }, [patientName]);
+  return () => clearTimeout(timer);
+}, [patientName]);
+
+  const waitForReport = async (reportId, maxAttempts = 10, interval = 2000) => {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const res = await axios.get(`/api/v1/reports/${reportId}`);
+      if (res.status === 200) return res.data;
+    } catch (err) {
+      // report not ready yet
+    }
+    await new Promise(resolve => setTimeout(resolve, interval));
+  }
+  throw new Error("Report not ready after waiting");
+};
 
   const handlePatientSearch = async () => {
     try {
@@ -56,38 +69,63 @@ const ScanUploader = () => {
     }
   };
 
+
+
+
   const handleUpload = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+  e.preventDefault();
+  setError('');
+  setSuccess('');
 
-    if (!file || !patientId || !scanType) {
-      setError('Please select a patient, scan type, and file');
-      return;
-    }
+  if (!file || !patientId || !scanType) {
+    setError('Please select a patient, scan type, and file');
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('scan_type', scanType);
-      formData.append('patient_id', patientId);
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('scan_type', scanType);
+    formData.append('patient_id', patientId);
 
-      const response = await axios.post('http://localhost:8000/api/v1/scans/', formData, {
+    // Step 1: Upload the scan
+    const uploadResponse = await axios.post('http://localhost:8000/api/v1/scans/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+
+    const scanId = uploadResponse.data?.id;
+    if (!scanId) throw new Error("Scan ID not returned from scan upload response");
+
+    setSuccess('Scan uploaded successfully! Generating report...');
+
+    // Step 2: Trigger analysis and get report ID
+    const analysisResponse = await axios.post(
+      `http://localhost:8000/api/v1/reports/analyze_scan/${scanId}`,
+      {},
+      {
         headers: {
-          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-      });
+      }
+    );
 
-      setSuccess('Scan uploaded successfully!');
-      // Redirect to report view with the new scan ID
-      navigate(`/reports/${response.data.scan_id}`);
-      
-    } catch (err) {
-      console.error('Upload error:', err);
-      setError(err.response?.data?.detail || 'Upload failed. Please try again.');
-    }
-  };
+    const reportId = analysisResponse.data?.report_id;
+    if (!reportId) throw new Error("Report ID not returned from analysis");
+
+    // Step 3: Navigate directly to report (no need to wait if backend confirms creation)
+    navigate(`/reports/${reportId}`);
+    
+  } catch (err) {
+    console.error('Upload or analysis error:', err);
+    setError(err.response?.data?.detail || 'Something went wrong. Please try again.');
+  }
+};
+
+
+
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-xl">
