@@ -27,7 +27,9 @@ logger = logging.getLogger(__name__)
 ALLOWED_MIME_TYPES = {
     'application/dicom': '.dcm',
     'application/octet-stream': ['.nii', '.nii.gz'],  # NIfTI files
-    'image/dicom': '.dcm'  # Alternative DICOM MIME type
+    'image/dicom': '.dcm',  # Alternative DICOM MIME type
+    'image/jpeg': '.jpg',  # <--- Allow JPEG
+    'image/png': '.png',   # <--- Allow PNG
 }
 @router.post("/", response_model=Scan)
 async def upload_scan(

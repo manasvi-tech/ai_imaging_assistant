@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import Navbar from './components/Navbar';  
 import ReportDashboard from './pages/ReportDashboard';
 import ProfilePage from './pages/ProfilePage';
+import OAuthCallback from './pages/OAuthCallback';
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/reports/:reportId" element={<ReportDashboard />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/oauth/callback" element={<OAuthCallback />} />
       </Routes>
     </Router>
   );

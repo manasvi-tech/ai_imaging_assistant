@@ -1,130 +1,152 @@
+// src/pages/Signup.jsx
 import { useState } from "react";
-import axios from "../api/axios";
-import { setToken } from "../utils/auth";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+import { setToken } from "../utils/auth";
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const Signup = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleLogin = async (e) => {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+    name: "",
+    profile_picture: "",
+    role: "student",
+  });
+
+  const handleChange = (e) => {
+    setFormData({ 
+      ...formData, 
+      [e.target.name]: e.target.value 
+    });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
     setIsLoading(true);
-    
-    const formData = new URLSearchParams();
-    formData.append("username", email);
-    formData.append("password", password);
 
     try {
-      const res = await axios.post("/auth/login/email", formData, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      setToken(res.data.access_token);
+      const response = await axios.post(
+        "http://localhost:8000/api/v1/auth/signup/email",
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      // Store the token received from signup
+      setToken(response.data.access_token);
+      
+      // Redirect to dashboard
       navigate("/dashboard");
     } catch (err) {
-      alert("Invalid credentials");
+      const errorData = err.response?.data;
+      if (Array.isArray(errorData)) {
+        setError(errorData.map(err => err.msg).join(", "));
+      } else if (errorData?.detail) {
+        setError(errorData.detail);
+      } else {
+        setError("Signup failed. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleSignup = () => {
     window.location.href = "http://localhost:8000/api/v1/auth/login/google";
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 text-[#206f6a] rounded-lg shadow-md">
-        <div className="text-center">
-          <h2 className="mt-6 text-3xl  text-text-[#206f6a]">
-            Sign in to your account
-          </h2>
-          <p className="mt-2 text-sm text-gray-600">
-            Or{' '}
-            <Link 
-              to="/signup" 
-              className="font-medium text-teal-500 hover:text-blue-500"
-            >
-              create a new account
-            </Link>
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
+      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-lg">
+        <h2 className="text-2xl font-bold text-center text-[#206f6a] mb-6">Create your account</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && <p className="text-red-600 text-sm">{error}</p>}
 
-        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-          <div className="rounded-md shadow-sm space-y-4">
-            <div>
-              <label htmlFor="email" className="sr-only">Email address</label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">Password</label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="Email"
+            className="w-full px-4 py-2 border rounded-md"
+            value={formData.email}
+            onChange={handleChange}
+            autoComplete="email"
+          />
 
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <input
-                id="remember-me"
-                name="remember-me"
-                type="checkbox"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                Remember me
-              </label>
-            </div>
+          <input
+            type="password"
+            name="password"
+            required
+            placeholder="Password"
+            className="w-full px-4 py-2 border rounded-md"
+            value={formData.password}
+            onChange={handleChange}
+            autoComplete="new-password"
+          />
 
-            <div className="text-sm">
-              <Link 
-                to="/forgot-password" 
-                className="font-medium text-teal-500 hover:text-blue-500"
-              >
-                Forgot your password?
-              </Link>
-            </div>
-          </div>
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            className="w-full px-4 py-2 border rounded-md"
+            value={formData.name}
+            onChange={handleChange}
+            autoComplete="name"
+          />
 
-          <div>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#206f6a] hover:bg-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              {isLoading ? (
-                <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  Signing in...
-                </>
-              ) : 'Sign in'}
-            </button>
-          </div>
+          <input
+            type="url"
+            name="profile_picture"
+            placeholder="Profile Picture URL"
+            className="w-full px-4 py-2 border rounded-md"
+            value={formData.profile_picture}
+            onChange={handleChange}
+          />
+
+          <select
+            name="role"
+            value={formData.role}
+            onChange={handleChange}
+            className="w-full px-4 py-2 border rounded-md"
+          >
+            <option value="student">Student</option>
+            <option value="instructor">Instructor</option>
+            <option value="admin">Admin</option>
+          </select>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className={`w-full bg-[#206f6a] text-white py-2 rounded-md hover:bg-[#1a5c58] ${
+              isLoading ? 'opacity-75 cursor-not-allowed' : ''
+            }`}
+          >
+            {isLoading ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Signing up...
+              </>
+            ) : 'Sign Up'}
+          </button>
         </form>
+
+        <p className="mt-4 text-sm text-center">
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#206f6a] font-medium">
+            Log in
+          </Link>
+        </p>
 
         <div className="mt-6">
           <div className="relative">
@@ -140,8 +162,8 @@ export default function Login() {
 
           <div className="mt-6">
             <button
-              onClick={handleGoogleLogin}
-              className="w-full inline-flex justify-center py-3 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={handleGoogleSignup}
+              className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <svg className="w-5 h-5 mr-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -149,11 +171,13 @@ export default function Login() {
                 <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                 <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
               </svg>
-              Sign in with Google
+              Sign up with Google
             </button>
           </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default Signup;

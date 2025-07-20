@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import image from '../assets/homepage/image.jpg'
+import image from '../assets/homepage/image.jpg';
 
 const ReportDashboard = () => {
   const { reportId } = useParams();
@@ -123,16 +123,41 @@ const ReportDashboard = () => {
     }
   };
 
-  const handleGenerateSegmentedImage = () => {
-    setIsGeneratingSegmented(true);
-    // Replace this path with your actual segmented image path
-    const segmentedImagePath = image
-    
-    // Simulate a brief loading time
-    setTimeout(() => {
+  const handleGenerateSegmentedImage = async () => {
+    try {
+      setIsGeneratingSegmented(true);
+      // Replace this path with your actual segmented image path
+      const segmentedImagePath = 'frontend/public/4lrkjgow3t3w_802noifjwojr-30knlq3oro-hohrfowii9-2902.jpg';
+      
+      // You can either:
+      // 1. Make an API call to generate/fetch the segmented image
+      // 2. Or directly set a static image path
+      
+      // For now, setting a placeholder - replace with your actual implementation
       setSegmentedImage(segmentedImagePath);
+      
+      // If you need to make an API call, uncomment and modify this:
+      /*
+      const response = await axios.get(
+        `http://localhost:8000/api/v1/scans/${report.scan_id}/segmented`,
+        {
+          responseType: 'blob',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      
+      const imageUrl = URL.createObjectURL(response.data);
+      setSegmentedImage(imageUrl);
+      */
+      
+    } catch (err) {
+      console.error('Error generating segmented image:', err);
+      setError('Failed to generate segmented image');
+    } finally {
       setIsGeneratingSegmented(false);
-    }, 500);
+    }
   };
 
   const toggleExpand = () => {

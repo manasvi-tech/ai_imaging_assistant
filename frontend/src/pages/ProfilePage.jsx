@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
-import { FiUser, FiMail, FiKey, FiCalendar, FiEdit } from 'react-icons/fi';
+import { FiUser, FiMail, FiCalendar, FiEdit, FiSave } from 'react-icons/fi';
 
 const ProfilePage = () => {
   const { user: authUser, logout } = useAuth();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    profile_picture: ''
+  });
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -18,6 +24,11 @@ const ProfilePage = () => {
           }
         });
         setUser(response.data);
+        setFormData({
+          name: response.data.name,
+          email: response.data.email,
+          profile_picture: response.data.profile_picture || ''
+        });
       } catch (err) {
         setError(err.response?.data?.detail || 'Failed to load profile');
       } finally {
@@ -27,6 +38,24 @@ const ProfilePage = () => {
 
     fetchProfile();
   }, []);
+
+  const handleEditProfile = async () => {
+    try {
+      const response = await axios.put(
+        'http://localhost:8000/api/v1/auth/me',
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        }
+      );
+      setUser(response.data);
+      setEditMode(false);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to update profile');
+    }
+  };
 
   if (loading) return <div className="text-center py-8">Loading profile...</div>;
   if (error) return <div className="text-center py-8 text-red-600">{error}</div>;
@@ -51,13 +80,34 @@ const ProfilePage = () => {
                 )}
               </div>
               <div>
-                <h1 className="text-2xl font-bold">{user.name}</h1>
+                {editMode ? (
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="text-2xl font-bold bg-white text-gray-800 p-1 rounded"
+                  />
+                ) : (
+                  <h1 className="text-2xl font-bold">{user.name}</h1>
+                )}
                 <p className="text-[#c2e0dd] capitalize">{user.role.toLowerCase()}</p>
               </div>
             </div>
-            <button className="flex items-center px-4 py-2 bg-white text-[#206f6a] rounded-md hover:bg-gray-100">
-              <FiEdit className="mr-2" /> Edit Profile
-            </button>
+            {editMode ? (
+              <button 
+                onClick={handleEditProfile}
+                className="flex items-center px-4 py-2 bg-white text-[#206f6a] rounded-md hover:bg-gray-100"
+              >
+                <FiSave className="mr-2" /> Save Changes
+              </button>
+            ) : (
+              <button 
+                onClick={() => setEditMode(true)}
+                className="flex items-center px-4 py-2 bg-white text-[#206f6a] rounded-md hover:bg-gray-100"
+              >
+                <FiEdit className="mr-2" /> Edit Profile
+              </button>
+            )}
           </div>
         </div>
 
@@ -68,17 +118,18 @@ const ProfilePage = () => {
             
             <div className="flex items-start space-x-4">
               <FiMail className="text-[#206f6a] mt-1" />
-              <div>
+              <div className="w-full">
                 <p className="text-sm text-gray-500">Email</p>
-                <p className="text-gray-800">{user.email}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4">
-              <FiKey className="text-[#206f6a] mt-1" />
-              <div>
-                <p className="text-sm text-gray-500">Role</p>
-                <p className="text-gray-800 capitalize">{user.role.toLowerCase()}</p>
+                {editMode ? (
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full p-2 border rounded"
+                  />
+                ) : (
+                  <p className="text-gray-800">{user.email}</p>
+                )}
               </div>
             </div>
 
@@ -89,27 +140,32 @@ const ProfilePage = () => {
                 <p className="text-gray-800">Just now</p>
               </div>
             </div>
+
+            {editMode && (
+              <div className="flex items-start space-x-4">
+                <FiUser className="text-[#206f6a] mt-1" />
+                <div className="w-full">
+                  <p className="text-sm text-gray-500">Profile Picture URL</p>
+                  <input
+                    type="text"
+                    value={formData.profile_picture}
+                    onChange={(e) => setFormData({...formData, profile_picture: e.target.value})}
+                    className="w-full p-2 border rounded"
+                    placeholder="Enter image URL"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="space-y-4">
             <h2 className="text-xl font-semibold text-gray-800">Account Actions</h2>
             
-            <button className="w-full flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-              <span>Change Password</span>
-              <FiKey className="text-gray-400" />
-            </button>
-
-            <button className="w-full flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-              <span>Update Email</span>
-              <FiMail className="text-gray-400" />
-            </button>
-
             <button 
               onClick={logout}
               className="w-full flex items-center justify-between p-4 border rounded-lg hover:bg-red-50 text-red-600"
             >
               <span>Logout</span>
-              <FiKey className="text-red-400" />
             </button>
           </div>
         </div>

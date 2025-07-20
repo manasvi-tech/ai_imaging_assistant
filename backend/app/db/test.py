@@ -1,27 +1,15 @@
-from app.db.session import SessionLocal
-from app.db.models.scan import Scan
+import requests
 
-def fix_invalid_scans():
-    db = SessionLocal()
-    try:
-        # Find scans with no patient_id
-        invalid_scans = db.query(Scan).filter(Scan.patient_id == None).all()
-        
-        if not invalid_scans:
-            print("No invalid scans found")
-            return
-        
-        print(f"Found {len(invalid_scans)} invalid scans")
-        
-        # Either delete them or assign to patient 1 (example)
-        for scan in invalid_scans:
-            scan.patient_id = 1  # Assign to your existing patient
-            # OR: db.delete(scan)
-        
-        db.commit()
-        print("Fixed invalid scans")
-    finally:
-        db.close()
+API_URL = "https://api-inference.huggingface.co/models/MONAI/VISTA3D-HF"
+headers = {
+    "Authorization": f"Bearer YOUR_HF_API_KEY"
+}
 
-if __name__ == "__main__":
-    fix_invalid_scans()
+# You must upload a 3D image (e.g., .nii.gz or .dcm series converted to NIfTI)
+with open("example_volume.nii.gz", "rb") as f:
+    data = f.read()
+
+response = requests.post(API_URL, headers=headers, data=data)
+
+# Print the response (usually a link to download segmentation)
+print(response.json())
