@@ -403,53 +403,44 @@ az container create ^
 `Endpoint: http://monai-seg-api-instance.eastus.azurecontainer.io:8000/segment`
 
 
-# Future Scope
-- **Image Analysis Agent**  
-  - Automated detection of abnormalities in DICOM scans  
-  - Priority tagging for critical findings  
+## Future Scope
 
-- **Literature Search Agent**  
-  - Real-time PubMed/NCBI querying via RAG  
-  - Citation generation for differential diagnoses  
+### 1. AI Agent System
+- **Image Analysis Agent**
+  - Automated detection of abnormalities (tumors, fractures, bleeds)
+  - Priority tagging for urgent findings
 
-- **Report Generation Agent**  
-  - Medical terminology standardization (SNOMED CT)  
-  - Multi-format export (PDF/DICOM-SR)  
+- **Literature Research Agent**
+  - Real-time PubMed/UpToDate queries via RAG
+  - Auto-generated citations for diagnoses
 
+- **Report Generation Agent**
+  - Standardized reports using SNOMED-CT/RadLex
+  - Multi-format export (PDF, HL7, DICOM-SR)
 
-- **WebSockets Implementation**  
-  ```python
-  # FastAPI WebSocket example
-  @app.websocket("/collab/{case_id}")
-  async def case_review(websocket: WebSocket):
-      await websocket.accept()
-      while True:
-          data = await websocket.receive_json()
-          # Broadcast annotations to all connected clinicians
-          ```
+### 2. Real-Time Collaboration
+- **WebSockets Integration**
+  - Live co-annotation of DICOM images
+  - Synchronized report editing across devices
 
-- **Infrastructure Automation**  
+- **Notification System**
+  - Alerts for critical findings
+  - @mentions in shared case reviews
 
-- **Terraform/Bicep for Azure**  
-  ```hcl
-  # Bicep template snippet
-  resource monaiContainer 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
-    name: 'monai-seg-api'
-    properties: {
-      containers: [{
-        name: 'monai'
-        image: '${acrLoginServer}/monai-seg-api:latest'
-        resources: { requests: { cpu: 2, memoryInGB: 4 } }
-      }]
-    }
-  }
-  
-- **Multi-Stage CI/CD**  
-  ```yaml
-  # GitHub Actions pipeline
-  - name: Deploy to Staging
-    if: github.ref == 'refs/heads/main'
-    run: |
-      az deployment group create \
-        --template-file ./infra/staging.bicep \
-        --parameters acrPassword=${{ secrets.ACR_PASSWORD }}
+### 3. Infrastructure Automation
+- **Terraform/Bicep**
+  - Single-click Azure deployments
+  - Multi-region failover support
+
+- **CI/CD Pipelines**
+  - Dev → Stage → Prod with approval gates
+  - Automated security scanning (OWASP ZAP)
+
+### 4. Advanced Features
+- **Multi-Model Support**
+  - Lung/brain segmentation models
+  - 3D volume rendering
+
+- **Mobile Offline Mode**
+  - React Native app with cached scans/reports
+  - Sync when back online   
