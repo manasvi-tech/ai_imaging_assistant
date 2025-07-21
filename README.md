@@ -120,11 +120,14 @@ response = generative_model.generate_content([
 
 ### Backend
 ```bash
+venv\Scripts\activate
+cd backend
 uvicorn app.main:app --reload
 ```
 
 ### Frontend
 ```bash
+cd frontend
 npm run dev
 ```
 
