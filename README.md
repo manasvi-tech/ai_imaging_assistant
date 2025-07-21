@@ -284,6 +284,79 @@ ai_medical_imaging
 └─ test_gemini.py
 
 ```
+## ☁️ Deployment Architecture
+
+```mermaid
+graph LR
+    A[React Frontend] -->|HTTP Requests| B[FastAPI Backend]
+    B -->|CRUD Operations| C[(PostgreSQL)]
+    B -->|DICOM Images| D{Azure Container}
+    D --> E[MONAI Segmentation]
+    B -->|API Calls| F[Gemini 1.5 Flash]
+    
+    style D fill:#008AD7,stroke:#0062A3
+
+```
+## ☁️ System Architecture with Cloud AI Components
+
+```mermaid
+graph TD
+    A[React Frontend] -->|HTTP Requests| B[FastAPI Backend]
+    B -->|CRUD Operations| C[(PostgreSQL Database)]
+    B -->|DICOM Images| D{Azure Container Instance}
+    subgraph Azure Cloud
+        D --> E[MONAI Segmentation Model]
+        D --> F[Container Registry]
+    end
+    G[Local Development] -->|Docker Build| F
+    F -->|Image Pull| D
+
+    style G fill:#f9f,stroke:#333
+    style D fill:#008AD7,stroke:#0062A3
+    style F fill:#008AD7,stroke:#0062A3
+```
+
+### 🐳 MONAI Deployment Workflow
+
+1. **Local Build**:
+```bash
+docker build -t monai-seg-api -f Dockerfile.monai .
+```
+
+2. **Azure Registry Push**:
+```bash
+az acr login --name monairegistry
+docker tag monai-seg-api monairegistry.azurecr.io/monai-seg-api:latest
+docker push monairegistry.azurecr.io/monai-seg-api:latest
+```
+
+3. **Container Instance Creation**:
+```bash
+az container create ^
+  --resource-group monai-rg ^
+  --name monai-seg-api-instance ^
+  --image monairegistry.azurecr.io/monai-seg-api:latest ^
+  --registry-login-server monairegistry.azurecr.io ^
+  --registry-username monairegistry ^
+  --registry-password pssword ^
+  --dns-name-label monai-seg-api-instance ^
+  --ports 8000 ^
+  --os-type Linux ^
+  --cpu 2 ^
+  --memory 4
+```
+
+### Key Components
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Frontend** | React | DICOM viewer & report interface |
+| **Backend** | FastAPI | REST API for business logic |
+| **Database** | PostgreSQL | Patient data & report storage |
+| **AI Model** | MONAI (NVIDIA) | Medical image segmentation |
+| **Container Host** | Azure ACI | Cloud deployment of model |
+| **Registry** | Azure ACR | Docker image management |
+
+**Endpoint**: `http://monai-seg-api-instance.eastus.azurecontainer.io:8000/segment`
 
 ## 🖥️ Application Demo
 
@@ -322,18 +395,8 @@ ai_medical_imaging
 
 ## ☁️ Cloud AI Integration
 **Azure-Powered Segmentation**  
-![MONAI Segmentation](demo/segmentation-result.png)  
+![MONAI Segmentation Endpoint](demo/segmentation-api.png)  
+![Azure Container Instance](demo/container-instance.png)  
 *Dockerized MONAI model deployed on Azure Container Instances*  
 `Endpoint: http://monai-seg-api-instance.eastus.azurecontainer.io:8000/segment`
 
-**Deployment Architecture**  
-```mermaid
-graph LR
-    A[Frontend] --> B[FastAPI Backend]
-    B --> C[(PostgreSQL)]
-    B --> D{Azure Container}
-    D --> E[MONAI Segmentation]
-    D --> F[Gemini 1.5 Flash]
-```
-*Fig: System architecture with cloud AI components*
-```
