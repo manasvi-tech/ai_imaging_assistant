@@ -114,9 +114,7 @@ const ReportDashboard = () => {
       setIsEditing(false);
       setError('');
       setSuccess('Report saved successfully!');
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 1000);
+      
     } catch (err) {
       console.error('Error saving report:', err);
       setError(err.response?.data?.detail || 'Failed to save report');
