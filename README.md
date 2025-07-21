@@ -429,7 +429,7 @@ az container create ^
           ```
 
 - **Infrastructure Automation**  
-```markdown
+
 - **Terraform/Bicep for Azure**  
   ```hcl
   # Bicep template snippet
@@ -443,10 +443,7 @@ az container create ^
       }]
     }
   }
-
   
-- **Deployment Pipeline**  
-```markdown
 - **Multi-Stage CI/CD**  
   ```yaml
   # GitHub Actions pipeline
