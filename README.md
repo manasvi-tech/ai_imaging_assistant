@@ -399,7 +399,60 @@ az container create ^
 ## ☁️ Cloud AI Integration
 **Azure-Powered Segmentation**  
 ![MONAI Segmentation Endpoint](demo/segmentation-api.png)  
-![Azure Container Instance](demo/container-instance.png)  
-*Dockerized MONAI model deployed on Azure Container Instances*  
+
 `Endpoint: http://monai-seg-api-instance.eastus.azurecontainer.io:8000/segment`
 
+
+# Future Scope
+- **Image Analysis Agent**  
+  - Automated detection of abnormalities in DICOM scans  
+  - Priority tagging for critical findings  
+
+- **Literature Search Agent**  
+  - Real-time PubMed/NCBI querying via RAG  
+  - Citation generation for differential diagnoses  
+
+- **Report Generation Agent**  
+  - Medical terminology standardization (SNOMED CT)  
+  - Multi-format export (PDF/DICOM-SR)  
+
+
+- **WebSockets Implementation**  
+  ```python
+  # FastAPI WebSocket example
+  @app.websocket("/collab/{case_id}")
+  async def case_review(websocket: WebSocket):
+      await websocket.accept()
+      while True:
+          data = await websocket.receive_json()
+          # Broadcast annotations to all connected clinicians
+          ```
+
+- **Infrastructure Automation**  
+```markdown
+- **Terraform/Bicep for Azure**  
+  ```hcl
+  # Bicep template snippet
+  resource monaiContainer 'Microsoft.ContainerInstance/containerGroups@2021-09-01' = {
+    name: 'monai-seg-api'
+    properties: {
+      containers: [{
+        name: 'monai'
+        image: '${acrLoginServer}/monai-seg-api:latest'
+        resources: { requests: { cpu: 2, memoryInGB: 4 } }
+      }]
+    }
+  }
+
+  
+- **Deployment Pipeline**  
+```markdown
+- **Multi-Stage CI/CD**  
+  ```yaml
+  # GitHub Actions pipeline
+  - name: Deploy to Staging
+    if: github.ref == 'refs/heads/main'
+    run: |
+      az deployment group create \
+        --template-file ./infra/staging.bicep \
+        --parameters acrPassword=${{ secrets.ACR_PASSWORD }}
