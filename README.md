@@ -1,4 +1,4 @@
-```markdown
+
 # Medical Imaging and Report Assistant
 
 ## 🌟 Project Overview
