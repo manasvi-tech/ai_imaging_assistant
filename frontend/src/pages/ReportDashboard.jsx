@@ -6,7 +6,7 @@ import image from '../assets/homepage/image.jpg'
 
 const ReportDashboard = () => {
   const { reportId } = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [report, setReport] = useState(null);
   const [scanImage, setScanImage] = useState(null);
   const [doctorNotes, setDoctorNotes] = useState('');
@@ -93,6 +93,7 @@ const ReportDashboard = () => {
 
   const handleSaveReport = async () => {
     try {
+      console.log('User Role:', user?.role);
       const response = await axios.put(
         `http://localhost:8000/api/v1/reports/${reportId}`,
         {
@@ -147,6 +148,10 @@ const ReportDashboard = () => {
     });
   };
 
+  if (authLoading) {
+    return <div className="p-4">Loading user authentication...</div>;
+  }
+
   if (isLoading) {
     return <div className="p-4">Loading report...</div>;
   }
@@ -154,6 +159,8 @@ const ReportDashboard = () => {
   if (!report) {
     return <div className="p-4 text-red-500">{error || 'Report not found'}</div>;
   }
+
+
 
   return (
     <div className="max-w-7xl mx-auto p-6">

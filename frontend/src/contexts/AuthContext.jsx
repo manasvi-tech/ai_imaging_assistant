@@ -7,18 +7,37 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const login = async (token) => {
+    localStorage.setItem('token', token);
+    try {
+      const res = await axios.get('http://localhost:8000/api/v1/auth/me', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(res.data);
+    } catch (err) {
+      console.error('Error fetching user after login:', err);
+      localStorage.removeItem('token');
+      throw err;
+    }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return setLoading(false);
+
       try {
-        const token = localStorage.getItem('token');
-        if (token) {
-          const response = await axios.get('http://localhost:8000/api/v1/auth/me', {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          setUser(response.data);
-        }
-      } catch (error) {
-        console.error('Error fetching user:', error);
+        const res = await axios.get('http://localhost:8000/api/v1/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(res.data);
+      } catch (err) {
+        console.error('Error fetching user:', err);
         localStorage.removeItem('token');
       } finally {
         setLoading(false);
@@ -29,12 +48,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, setUser, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

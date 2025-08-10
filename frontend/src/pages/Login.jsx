@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "../api/axios";
 import { setToken } from "../utils/auth";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext"; // Import the AuthContext
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -9,26 +10,29 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const { login } = useAuth(); // 1. use login from context
+
+ const handleLogin = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    
+
     const formData = new URLSearchParams();
-    formData.append("username", email);
-    formData.append("password", password);
+    formData.append('username', email); // your email field
+    formData.append('password', password);
 
     try {
-      const res = await axios.post("/auth/login/email", formData, {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
-      setToken(res.data.access_token);
-      navigate("/dashboard");
+      const res = await axios.post(
+        'http://localhost:8000/api/v1/auth/login/email',
+        formData,
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+      );
+
+      await login(res.data.access_token); // ✅ this stores token & fetches user
+      navigate('/dashboard');
     } catch (err) {
-      alert("Invalid credentials");
-    } finally {
-      setIsLoading(false);
+      alert('Login failed. Please try again.');
     }
   };
+
 
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:8000/api/v1/auth/login/google";
