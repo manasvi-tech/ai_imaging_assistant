@@ -33,22 +33,27 @@ def update_profile(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # Update only the fields that are provided
+        # Re-fetch user from the active session
+        db_user = db.query(User).filter(User.id == current_user.id).first()
+        if not db_user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        # Update only provided fields
         if user_data.name is not None:
-            current_user.name = user_data.name
+            db_user.name = user_data.name
         if user_data.profile_picture is not None:
-            current_user.profile_picture = user_data.profile_picture
-        
-        current_user.updated_at = datetime.utcnow()
+            db_user.profile_picture = user_data.profile_picture
+        if user_data.email is not None:
+            db_user.email = user_data.email
+
+        db_user.updated_at = datetime.utcnow()
+
         db.commit()
-        db.refresh(current_user)
-        return current_user
+        db.refresh(db_user)
+        return db_user
     except Exception as e:
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-@router.get("/last-login")
-def get_last_login(current_user: User = Depends(get_current_user)):
-    return {"last_login": current_user.last_login}
