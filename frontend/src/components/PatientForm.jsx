@@ -9,7 +9,6 @@ const PatientForm = () => {
     const [patient, setPatient] = useState({
         name: '',
         age: '',
-        sex: 'Male',
         medical_record_num: ''
     });
     const [error, setError] = useState('');
@@ -38,7 +37,11 @@ const PatientForm = () => {
             }
 
             const response = await axios.post('http://localhost:8000/api/v1/patients/', 
-                patient,
+                {
+                    name: patient.name,
+                    age: parseInt(patient.age) || 0,
+                    medical_record_num: patient.medical_record_num
+                },
                 {
                     headers: {
                         'Content-Type': 'application/json',
@@ -51,7 +54,6 @@ const PatientForm = () => {
             setPatient({
                 name: '',
                 age: '',
-                sex: 'Male',
                 medical_record_num: ''
             });
             
@@ -112,36 +114,20 @@ const PatientForm = () => {
                     />
                 </div>
 
-                {/* Age and Sex */}
-                <div className="flex space-x-2">
-                    <div className="flex-1 space-y-0.5">
-                        <label className="block text-sm font-medium text-white">Age</label>
-                        <input
-                            type="number"
-                            name="age"
-                            value={patient.age}
-                            onChange={handleChange}
-                            className="w-full p-1 border border-gray-300 rounded text-sm text-black"
-                            placeholder="40"
-                            min="0"
-                            max="120"
-                            disabled={isStudent}
-                        />
-                    </div>
-                    <div className="flex-1 space-y-0.5">
-                        <label className="block text-sm font-medium text-white">Sex</label>
-                        <select
-                            name="sex"
-                            value={patient.sex}
-                            onChange={handleChange}
-                            className="w-full p-1 border border-gray-300 rounded text-sm text-black"
-                            disabled={isStudent}
-                        >
-                            <option value="Male">Male</option>
-                            <option value="Female">Female</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
+                {/* Age */}
+                <div className="space-y-0.5">
+                    <label className="block text-sm font-medium text-white">Age</label>
+                    <input
+                        type="number"
+                        name="age"
+                        value={patient.age}
+                        onChange={handleChange}
+                        className="w-full p-1 border border-gray-300 rounded text-sm text-black"
+                        placeholder="40"
+                        min="0"
+                        max="120"
+                        disabled={isStudent}
+                    />
                 </div>
 
                 {/* Medical Record Number */}
